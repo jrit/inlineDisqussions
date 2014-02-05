@@ -13,11 +13,14 @@
  *  See https://github.com/tsi/inlineDisqussions for more info.
  */
 
+// disqus requires these as globals
+var disqus_identifier, disqus_url, disqus_shortname;
 
 ( function ( $ )
 {
 
 	var settings = {};
+	var nodeIdentifier = 'data-disqus-identifier';
 
 	$.fn.extend( {
 		inlineDisqussions: function ( options )
@@ -29,11 +32,10 @@
 				displayCount: true,
 				highlighted: true,
 				position: 'right',
-				background: 'white',
+				backgroundColor: 'white',
 				maxWidth: 9999,
-				disqus_shortname: null,
-				disqus_identifier: null,
-				disqus_url: null
+				minMargin: 300,
+				disqus_shortname: null
 			};
 
 			// Overwrite default options with user provided ones.
@@ -44,6 +46,8 @@
 				console.warn( "disqus_shortname required for inlineDisqussions" );
 				return;
 			}
+
+			disqus_shortname = settings.disqus_shortname;
 
 			// Append #disqus_thread to body if it doesn't exist yet.
 			if ( $( '#disqussions_wrapper' ).length === 0 )
@@ -78,9 +82,9 @@
 			}
 
 			// Hide the discussion.
-			$( 'html' ).click( function ( event )
+			$( 'html' ).click( function ( e )
 			{
-				if ( $( event.target ).parents( '#disqussions_wrapper, .main-disqussion-link-wrp' ).length === 0 )
+				if ( $( e.target ).parents( '#disqussions_wrapper, .main-disqussion-link-wrp' ).length === 0 )
 				{
 					hideDisqussion();
 				}
@@ -103,13 +107,13 @@
 
 		var identifier;
 		// You can force a specific identifier by adding an attribute to the paragraph.
-		if ( node.attr( 'data-disqus-identifier' ) )
+		if ( node.attr( nodeIdentifier ) )
 		{
-			identifier = node.attr( 'data-disqus-identifier' );
+			identifier = node.attr( nodeIdentifier );
 		}
 		else
 		{
-			while ( $( '[data-disqus-identifier="' + window.location.pathname + settings.identifier + '-' + i + '"]' ).length > 0 )
+			while ( $( '[' + nodeIdentifier + '="' + window.location.pathname + settings.identifier + '-' + i + '"]' ).length > 0 )
 			{
 				i++;
 			}
@@ -119,10 +123,12 @@
 		// Create the discussion note.
 		var cls = "disqussion-link " + ( settings.highlighted ? "disqussion-highlight" : "" );
 
+		var url = window.location.href.split("#")[0] + "-" + identifier;
+
 		var $a = $( '<a class="' + cls + '" />' )
-		  .attr( 'href', window.location.pathname + settings.identifier + '-' + i + '#disqus_thread' )
-		  .attr( 'data-disqus-identifier', identifier )
-		  .attr( 'data-disqus-url', window.location.href + settings.identifier + '-' + i )
+		  .attr( 'href', url + "#disqus_thread" )
+		  .attr( nodeIdentifier, identifier )
+		  .attr( 'data-disqus-url', url )
 		  .attr( 'data-disqus-position', settings.position )
 		  .text( '+' )
 		  .wrap( '<div class="disqussion" />' );
@@ -138,14 +144,17 @@
 			positionNote( $note );
 		} );
 
-		node.attr( 'data-disqus-identifier', identifier ).on( "mouseover touchstart", function ()
-		{
-			$( "a.disqussion-link" ).removeClass( "hovered" );
-			$note.addClass( "hovered" );
-		} ).on( "mouseout", function ()
-		{
-			$note.removeClass( "hovered" );
-		} );
+		node
+			.attr( nodeIdentifier, identifier )
+			.on( "mouseover touchstart", function ()
+			{
+				$( ".disqussion.hovered" ).removeClass( "hovered" );
+				$note.addClass( "hovered" );
+			} )
+			.on( "mouseout", function ()
+			{
+				$note.removeClass( "hovered" );
+			} );
 
 		// Load the relative discussion.
 		$note.on( "click", "a", function ( e )
@@ -173,7 +182,7 @@
 		if ( $( 'a.main-disqussion-link' ).length === 0 )
 		{
 			var $a = $( '<a class="main-disqussion-link" />' )
-			  .attr( 'href', window.location.pathname + '#disqus_thread' )
+			  .attr( 'href', '#disqus_thread' )
 			  .text( 'Comments' )
 			  .wrap( '<h2 class="main-disqussion-link-wrp" />' )
 			  .parent()
@@ -204,7 +213,7 @@
 
 	var loadDisqus = function ( source, callback )
 	{
-		var identifier = source.attr( 'data-disqus-identifier' );
+		var identifier = source.attr( nodeIdentifier );
 		var url = source.attr( 'data-disqus-url' );
 
 		$( "#disqus_thread" ).empty();
@@ -223,8 +232,8 @@
 		}
 		else
 		{
-			settings.disqus_identifier = identifier;
-			settings.disqus_url = url;
+			disqus_identifier = identifier;
+			disqus_url = url;
 
 			// Append the Disqus embed script to <head>.
 			var s = document.createElement( 'script' );
@@ -259,61 +268,86 @@
 		$( 'head' ).append( s );
 
 		// Add class to discussions that already have comments.
-		window.setTimeout( function ()
+		var counterInterval = window.setInterval( function ()
 		{
 			$( '.disqussion-link' ).filter( function ()
 			{
 				return $( this ).text().match( /[1-9]/g );
 			} ).addClass( "has-comments" );
-		}, 1000 );
+		}, 250 );
+
+		setTimeout( function ()
+		{
+			clearInterval( counterInterval );
+		}, 10000 );
 
 	};
 
 	var relocateDisqussion = function ( $note, main )
 	{
+		var windowWidth = $( window ).width();
+		$( '#disqus_thread' ).removeClass( "disqus-left disqus-right disqus-positioned" );
+
 		// Move the discussion to the right position.
-		var css = {};
-		if ( main === true )
-		{
-			$( '#disqus_thread' ).removeClass( "positioned" );
-			css = {
-				'position': 'static',
-				'width': 'auto'
-			};
-		}
-		else
-		{
-			var anchor = $note.find( "a" ).attr( "data-disqus-identifier" );
-			$( '#disqus_thread' ).detach().appendTo( '[data-disqus-identifier="' + anchor + '"]' );
-		}
-		//else
-		//{
-		//	$( '#disqus_thread' ).addClass( "positioned" )
-		//	css = {
-		//		'position': 'absolute'
-		//	};
-		//}
-		css.backgroundColor = settings.background;
-
-		var noteOffset = $note.offset();
-
-		var animate = {
-			top: noteOffset.top,
+		var css = {
+			position: 'static',
+			width: 'auto',
+			left: 'auto',
+			top: 'auto',
+			backgroundColor: settings.backgroundColor
 		};
 
-
-		if ( $note.attr( 'data-disqus-position' ) == 'right' )
+		if ( main !== true )
 		{
-			animate.left = noteOffset.left + $note.outerWidth();
-			animate.width = Math.min( parseInt( $( window ).width() - ( noteOffset.left + $note.outerWidth() ), 10 ), settings.maxWidth );
+			var anchorName = $note.find( "a" ).attr( nodeIdentifier );
+			var $p = $( 'p[' + nodeIdentifier + '="' + anchorName + '"]' );
+
+			if ( !$p.length && console )
+			{
+				console.warn( "can't find " + '[' + nodeIdentifier + '="' + anchorName + '"]' );
+				return;
+			}
+
+			var rightMargin = windowWidth - ( $p.position().left + $p.width() );
+
+			if ( rightMargin < settings.minMargin )
+			{
+				$( '#disqus_thread' ).detach().appendTo( $p );
+			}
+			else
+			{
+				$( '#disqus_thread' ).detach().addClass( "disqus-positioned" ).prependTo( "#disqussions_wrapper" );
+				css.position = "absolute";
+			}
+
+
+			if ( css.position !== "absolute" )
+			{
+				$( window ).scrollTop( Math.max( $( window ).scrollTop(), $p.offset().top - 10 ) );
+			}
 		}
-		else if ( $note.attr( 'data-disqus-position' ) == 'left' )
+		
+		if ( css.position === "absolute" )
 		{
-			animate.left = noteOffset.left - Math.min( parseInt( noteOffset.left, 10 ), settings.maxWidth );
-			animate.width = Math.min( parseInt( noteOffset.left, 10 ), settings.maxWidth );
+			var noteOffset = $note.offset();
+
+			css.top = noteOffset.top;
+
+			if ( $note.find( "a" ).attr( 'data-disqus-position' ) == 'right' )
+			{
+				$( '#disqus_thread' ).addClass( "disqus-right" );
+				css.left = windowWidth - rightMargin;
+				css.width = Math.min( windowWidth - rightMargin, settings.maxWidth );
+			}
+			else
+			{
+				$( '#disqus_thread' ).addClass( "disqus-left" );
+				css.left = noteOffset.left - Math.min( parseInt( noteOffset.left, 10 ), settings.maxWidth );
+				css.width = Math.min( parseInt( noteOffset.left, 10 ), settings.maxWidth );
+			}
 		}
 
-		$( '#disqus_thread' ).stop().fadeIn( 'fast' ).animate( animate, "fast" ).css( css );
+		$( '#disqus_thread' ).stop().fadeIn( 'fast' ).css( css );
 
 	};
 
@@ -325,16 +359,16 @@
 		// settings.highlighted
 		$( '#disqussions_overlay' ).fadeOut( 'fast' );
 		$( 'body' ).removeClass( 'disqussion-highlight' );
-		$( '[data-disqus-identifier]' ).removeClass( 'disqussion-highlighted' );
+		$( '[' + nodeIdentifier + ']' ).removeClass( 'disqussion-highlighted' );
 	};
 
 	var highlightDisqussion = function ( identifier )
 	{
 		$( 'body' ).addClass( 'disqussion-highlight' );
 		$( '#disqussions_overlay' ).fadeIn( 'fast' );
-		$( '[data-disqus-identifier]' )
+		$( '[' + nodeIdentifier + ']' )
 		  .removeClass( 'disqussion-highlighted' )
-		  .filter( '[data-disqus-identifier="' + identifier + '"]:not(".disqussion-link")' )
+		  .filter( '[' + nodeIdentifier + '="' + identifier + '"]:not(".disqussion-link")' )
 		  .addClass( 'disqussion-highlighted' );
 	};
 
