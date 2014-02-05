@@ -11,7 +11,7 @@
   z-index: 7;
 }
 .disqussion a {
-  opacity: 0;
+  opacity: 0.2;
   display: block;
   overflow: hidden;
   width: 20px;
