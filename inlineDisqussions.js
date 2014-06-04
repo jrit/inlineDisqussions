@@ -204,7 +204,7 @@ var disqus_identifier, disqus_url, disqus_shortname;
 
 	};
 
-	var createDisqusScript = function ( identifier )
+	var createDisqusScript = function ( identifier, url )
 	{
 		disqus_identifier = identifier;
 		disqus_url = url;
@@ -227,7 +227,7 @@ var disqus_identifier, disqus_url, disqus_shortname;
 		$( 'head' ).append( s );
 	};
 
-	var resetDisqus = function ( identifier )
+	var resetDisqus = function ( identifier, url )
 	{
 		DISQUS.reset( {
 			reload: true,
@@ -248,11 +248,11 @@ var disqus_identifier, disqus_url, disqus_shortname;
 
 		if ( window.DISQUS )
 		{
-			resetDisqus( identifier );
+			resetDisqus( identifier, url );
 		}
 		else
 		{
-			createDisqusScript( identifier );
+			createDisqusScript( identifier, url );
 		}
 
 		// Add 'active' class.
