@@ -1,0 +1,26 @@
+{
+  "name": "inlineDisqussions",
+  "main": "inlineDisqussions.js",
+  "version": "0.1.0",
+  "homepage": "https://github.com/jrit/inlineDisqussions",
+  "authors": [
+    "Jarrett Widman <jarrett.widman@vokalinteractive.com>"
+  ],
+  "description": "A jQuery plugin to allow inline comments on your site based on Disqus.",
+  "moduleType": [
+    "globals"
+  ],
+  "keywords": [
+    "inline",
+    "comments",
+    "annotations"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
