@@ -34,7 +34,7 @@ var disqus_identifier, disqus_url, disqus_shortname;
 			disqus_shortname: null,
 			nodeIdentifier: 'data-emphasis-key',
 		};
-		
+
 		// Overwrite default options with user provided ones.
 		settings = $.extend( {}, defaults, options );
 
@@ -119,7 +119,7 @@ var disqus_identifier, disqus_url, disqus_shortname;
 		// Create the discussion note.
 		var cls = "disqussion-link " + ( settings.highlighted ? "disqussion-highlight" : "" );
 
-		var url = window.location.href.split("#")[0] + "-" + identifier;
+		var url = window.location.href.split( "#" )[0] + "-" + identifier;
 
 		var $a = $( '<a class="' + cls + '" />' )
 		  .attr( 'href', url + "#disqus_thread" )
@@ -127,7 +127,7 @@ var disqus_identifier, disqus_url, disqus_shortname;
 		  .attr( 'data-disqus-url', url )
 		  .attr( 'data-disqus-position', settings.position )
 		  .text( '+' )
-		  .wrap( '<div class="disqussion" />' );
+		  .wrap( '<div class="disqussion disqus-' + settings.position + '" />' );
 
 		var $note = $a
 		  .parent()
@@ -208,6 +208,16 @@ var disqus_identifier, disqus_url, disqus_shortname;
 	{
 		disqus_identifier = identifier;
 		disqus_url = url;
+
+		disqus_config = function ()
+		{
+			this.callbacks.onNewComment.push( function ()
+			{
+				var $link = $( "a.disqussion-link[" + settings.nodeIdentifier + "='" + identifier + "']" );
+				$link.addClass( "has-comments" ).text(( +$link.text() || 0 ) + 1 );
+			} );
+			/* Available callbacks are afterRender, onInit, onNewComment, onPaginate, onReady, preData, preInit, preReset */
+		};
 
 		// Append the Disqus embed script to <head>.
 		var s = document.createElement( 'script' );
@@ -331,7 +341,7 @@ var disqus_identifier, disqus_url, disqus_shortname;
 				$( window ).scrollTop( Math.max( $( window ).scrollTop(), $p.offset().top - 10 ) );
 			}
 		}
-		
+
 		if ( css.position === "absolute" )
 		{
 			var noteOffset = $note.offset();

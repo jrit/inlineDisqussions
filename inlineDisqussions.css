@@ -10,6 +10,9 @@
   text-align: center;
   z-index: 7;
 }
+.disqussion.disqus-left {
+  margin-left: -20px;
+}
 .disqussion a {
   opacity: 0.15;
   display: block;
@@ -79,9 +82,11 @@
   background: #fff;
   z-index: 9;
 }
-#disqus_thread.disqus-right,
-#disqus_thread.disqus-left {
+#disqus_thread .disqus-right,
+#disqus_thread .disqus-left {
   max-width: 300px;
+}
+#disqus_thread .disqus-right {
   margin-left: 50px;
 }
 #disqussions_overlay {
@@ -90,7 +95,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.2);
   z-index: 8;
   display: none;
 }
