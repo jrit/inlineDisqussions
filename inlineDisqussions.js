@@ -31,6 +31,7 @@ var disqus_identifier, disqus_url, disqus_shortname;
       minMargin: 300,
       disqus_shortname: null,
       nodeIdentifier: 'data-emphasis-key',
+      getTopOffset: function () { return ($("#main-header").height()); }
     };
 
     // Overwrite default options with user provided ones.
@@ -124,6 +125,9 @@ var disqus_identifier, disqus_url, disqus_shortname;
     $(window).on("resize", function () {
       positionNote($note);
     });
+    setInterval(function () {
+      positionNote($note);
+    }, 1000);
 
     node
   .attr(settings.nodeIdentifier, identifier)
@@ -270,9 +274,11 @@ var disqus_identifier, disqus_url, disqus_shortname;
         return;
       }
 
-      var rightMargin = windowWidth - ($p.position().left + $p.width());
+      var rightMargin = windowWidth - ($p.offset().left + $p.width());
+      var leftMargin = $p.offset().left;
 
-      if (rightMargin < settings.minMargin) {
+      if (settings.position == 'right' && rightMargin < settings.minMargin
+        || settings.position == 'left' && leftMargin < settings.minMargin) {
         $('#disqus_thread').detach().appendTo($p);
       }
       else {
@@ -281,7 +287,7 @@ var disqus_identifier, disqus_url, disqus_shortname;
       }
 
       if (css.position !== "absolute") {
-        $(window).scrollTop(Math.max($(window).scrollTop(), $p.offset().top - 10));
+        $(window).scrollTop(Math.max($(window).scrollTop(), $p.offset().top - settings.getTopOffset()));
       }
 
       if (css.position === "absolute") {
