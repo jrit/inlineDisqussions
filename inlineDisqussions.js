@@ -31,7 +31,7 @@ var disqus_identifier, disqus_url, disqus_shortname;
       minMargin: 300,
       disqus_shortname: null,
       nodeIdentifier: 'data-emphasis-key',
-      getTopOffset: function () { return ($("#main-header").height()); }
+      getTopOffset: function () { return (10); }
     };
 
     // Overwrite default options with user provided ones.
