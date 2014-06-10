@@ -1,8 +1,6 @@
 .disqussion {
-  padding: 5px 10px 10px;
-  position: absolute;
-  top: 0;
-  left: 0;
+  top: 3px;
+  padding: 0 0 10px;
   line-height: 16px;
   font-size: 13px;
   font-weight: bold;
@@ -10,8 +8,22 @@
   text-align: center;
   z-index: 7;
 }
-.disqussion.disqus-left {
-  margin-left: -20px;
+.disqussion:not(.inline) {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+.disqussion.inline {
+  position: relative;
+  left: 5px;
+}
+.disqussion.disqus-left:not(.inline) {
+  margin-left: -10px;
+}
+.disqussion.disqus-left:not(.inline) a:after {
+  border-left: 7px solid transparent;
+  border-right: medium none;
+  left: 9px;
 }
 .disqussion a {
   opacity: 0.15;
@@ -34,18 +46,11 @@
   -o-transition: all 0.5s;
   transition: all 0.5s;
 }
-.disqussion a.has-comments {
-  opacity: .8;
-  background-color: #009900;
-}
-.disqussion a.has-comments:after {
-  border-top-color: #009900;
-}
 .disqussion a:after {
   border-right: 7px solid transparent;
   border-top: 7px solid #bbbbbb;
-  left: 14px;
-  top: 22px;
+  left: 4px;
+  top: 17px;
   height: 0;
   width: 0;
   display: block;
@@ -56,11 +61,19 @@
   -o-transition: all 0.5s;
   transition: all 0.5s;
 }
+.disqussion a.has-comments {
+  opacity: .8;
+  background-color: #009900;
+}
+.disqussion a.has-comments:after {
+  border-top-color: #009900 !important;
+}
 .disqussion:hover a,
 .disqussion.hovered a {
   opacity: 1;
 }
-.disqussion-contain:hover .disqussion a {
+.disqussion-contain:hover .disqussion a,
+.disqussion.inline a {
   opacity: 1;
 }
 #disqussions_wrapper {
@@ -106,5 +119,17 @@
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
   padding-top: 20px;
   padding-bottom: 20px;
+}
+.disqussion.inline {
+  display: none;
+}
+@media all and (max-width: 980px) {
+  #disqussions_wrapper {
+    display: none;
+  }
+  .disqussion.inline {
+    display: inline-block;
+    margin-left: auto;
+  }
 }
 /*# sourceMappingURL=inlineDisqussions.css.map */

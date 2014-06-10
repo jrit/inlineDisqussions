@@ -4,19 +4,34 @@
 @has-comments: #009900;
 
 .disqussion {
-    padding: 5px 10px 10px;
-    position: absolute;
-    top: 0;
-    left: 0;
+    top: 3px;
+    padding: 0 0 10px;
     line-height: 16px;
     font-size: 13px;
     font-weight: bold;
     font-family: sans-serif;
     text-align: center;
     z-index: 7;
-    
-    &.disqus-left {
-        margin-left: -20px;
+
+    &:not(.inline) {
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+
+    &.inline {
+        position: relative;
+        left: 5px;
+    }
+
+    &.disqus-left:not(.inline) {
+        margin-left: -10px;
+
+        a:after {
+            border-left: 7px solid transparent;
+            border-right: medium none;
+            left: 9px;
+        }
     }
 
     a {
@@ -39,40 +54,41 @@
         -moz-transition: all 0.5s;
         -o-transition: all 0.5s;
         transition: all 0.5s;
-    }
-
-    & a.has-comments {
-        opacity: .8;
-        background-color: @has-comments;
 
         &:after {
-            border-top-color: @has-comments;
+            border-right: 7px solid transparent;
+            border-top: 7px solid @bg;
+            left: 4px;
+            top: 17px;
+            height: 0;
+            width: 0;
+            display: block;
+            content: " ";
+            position: absolute;
+            -webkit-transition: all 0.5s;
+            -moz-transition: all 0.5s;
+            -o-transition: all 0.5s;
+            transition: all 0.5s;
+        }
+
+        &.has-comments {
+            opacity: .8;
+            background-color: @has-comments;
+
+            &:after {
+                border-top-color: @has-comments !important;
+            }
         }
     }
 
-    & a:after {
-        border-right: 7px solid transparent;
-        border-top: 7px solid @bg;
-        left: 14px;
-        top: 22px;
-        height: 0;
-        width: 0;
-        display: block;
-        content: " ";
-        position: absolute;
-        -webkit-transition: all 0.5s;
-        -moz-transition: all 0.5s;
-        -o-transition: all 0.5s;
-        transition: all 0.5s;
-    }
-
-    &:hover a, 
+    &:hover a,
     &.hovered a {
         opacity: 1;
     }
 }
 
-.disqussion-contain:hover .disqussion a {
+.disqussion-contain:hover .disqussion a,
+.disqussion.inline a {
   opacity: 1;
 }
 
@@ -125,4 +141,19 @@
 	box-shadow: 0 0 5px rgba(0,0,0,0.2);
 	padding-top: 20px;
 	padding-bottom: 20px;
+}
+
+
+.disqussion.inline {
+    display: none;
+}
+
+@media all and (max-width: 980px){
+    #disqussions_wrapper {
+        display: none;
+    }
+    .disqussion.inline {
+        display: inline-block;
+        margin-left: auto;
+    }
 }

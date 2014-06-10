@@ -69,7 +69,7 @@ var disqus_identifier, disqus_url, disqus_shortname;
 
     // Hide the discussion.
     $('html').click(function (e) {
-      if ($(e.target).parents('#disqussions_wrapper').length === 0) {
+      if ($(e.target).parents('#disqussions_wrapper, .disqussion.inline').length === 0) {
         hideDisqussion();
       }
     });
@@ -81,20 +81,24 @@ var disqus_identifier, disqus_url, disqus_shortname;
     return (window.location.href.split("#")[0] + "-" + identifier);
   };
 
-  var disqussionNotesHandler = function (i, node) {
+  var disqussionNotesHandler = function (i, $node) {
     var positionNote = function ($note) {
       $note.css({
-        'top': node.offset().top,
-        'left': node.offset().left + (settings.position == 'right' ? node.width() : -1 * $a.width())
+        'top': $node.offset().top,
+        'left': $node.offset().left + (settings.position == 'right' ? $node.width() : -1 * $absA.width())
       });
     };
 
-    node.wrapInner("<span/>");
+    if (!$node.text().replace(/\w/g, '')) {
+      return;
+    }
+
+    $node.wrapInner("<span/>");
 
     var identifier;
     // You can force a specific identifier by adding an attribute to the paragraph.
-    if (node.attr(settings.nodeIdentifier)) {
-      identifier = node.attr(settings.nodeIdentifier);
+    if ($node.attr(settings.nodeIdentifier)) {
+      identifier = $node.attr(settings.nodeIdentifier);
     }
     else {
       while ($('[' + settings.nodeIdentifier + '="' + window.location.pathname + settings.identifier + '-' + i + '"]').length > 0) {
@@ -108,39 +112,44 @@ var disqus_identifier, disqus_url, disqus_shortname;
 
     var url = getDisqusUrl(identifier);
 
-    var $a = $('<a class="' + cls + '" />')
-  .attr('href', url + "#disqus_thread")
-  .attr(settings.nodeIdentifier, identifier)
-  .attr('data-disqus-url', url)
-  .attr('data-disqus-position', settings.position)
-  .text('+')
-  .wrap('<div class="disqussion disqus-' + settings.position + '" />');
+    var $relA = $('<a class="' + cls + '" />')
+              .attr('href', url + "#disqus_thread")
+              .attr(settings.nodeIdentifier, identifier)
+              .attr('data-disqus-url', url)
+              .attr('data-disqus-position', settings.position)
+              .text('+')
+              .wrap('<div class="disqussion disqus-' + settings.position + '" />');
 
-    var $note = $a
-  .parent()
-  .appendTo('#disqussions_wrapper');
+    var $absA = $relA.clone().wrap('<div class="disqussion disqus-' + settings.position + '" />');
+
+    $relA.parent().addClass("inline").appendTo($node);
+
+    var $note = $absA
+                .parent()
+                .appendTo('#disqussions_wrapper');
 
     positionNote($note);
 
     $(window).on("resize", function () {
       positionNote($note);
     });
+
     setInterval(function () {
       positionNote($note);
     }, 1000);
 
-    node
-  .attr(settings.nodeIdentifier, identifier)
-  .on("mouseover touchstart", function () {
-    $(".disqussion.hovered").removeClass("hovered");
-    $note.addClass("hovered");
-  })
-  .on("mouseout", function () {
-    $note.removeClass("hovered");
-  });
+    $node
+      .attr(settings.nodeIdentifier, identifier)
+      .on("mouseover touchstart", function () {
+        $(".disqussion.hovered").removeClass("hovered");
+        $note.addClass("hovered");
+      })
+    .on("mouseout", function () {
+      $note.removeClass("hovered");
+    });
 
     // Load the relative discussion.
-    $note.on("click", "a", function (e) {
+    $note.find("a").add($relA).on("click", function (e) {
       e.preventDefault();
 
       if ($(this).is('.active')) {
@@ -149,7 +158,7 @@ var disqus_identifier, disqus_url, disqus_shortname;
       }
       else {
         relocateDisqussion($note);
-        loadDisqus($a);
+        loadDisqus($absA);
       }
     });
 
