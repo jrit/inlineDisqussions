@@ -23,6 +23,7 @@ var disqus_identifier, disqus_url, disqus_shortname;
     // Set up defaults
     var defaults = {
       identifier: 'disqussion',
+      threadId: "disqus_thread",
       displayCount: true,
       highlighted: true,
       position: 'right',
@@ -44,13 +45,17 @@ var disqus_identifier, disqus_url, disqus_shortname;
 
     disqus_shortname = settings.disqus_shortname;
 
-    // Append #disqus_thread to body if it doesn't exist yet.
+    // Append thread and wrapper to body if they don't exist yet.
     if ($('#disqussions_wrapper').length === 0) {
       $('<div id="disqussions_wrapper"></div>').appendTo($('body'));
     }
 
-    if ($('#disqus_thread').length === 0) {
-      $('<div id="disqus_thread"></div>').appendTo('body');
+    if ($getThread().length === 0) {
+      $('<div id="' + settings.threadId + '"></div>').appendTo($('#disqussions_wrapper'));
+    }
+
+    if ($getThread().length > 1) {
+      console.warn("Multiple disqus threads found, this should be corrected.");
     }
 
     if (!$("#disqussions_overlay").length) {
@@ -113,7 +118,7 @@ var disqus_identifier, disqus_url, disqus_shortname;
     var url = getDisqusUrl(identifier);
 
     var $relA = $('<a class="' + cls + '" />')
-              .attr('href', url + "#disqus_thread")
+              .attr('href', url + "#" + settings.threadId)
               .attr(settings.nodeIdentifier, identifier)
               .attr('data-disqus-url', url)
               .attr('data-disqus-position', settings.position)
@@ -169,9 +174,9 @@ var disqus_identifier, disqus_url, disqus_shortname;
 
     if ($a.length === 0) {
       var $a = $('<a class="main-disqussion-link" />')
-  .attr('href', '#disqus_thread')
-          .attr(settings.nodeIdentifier, "main")
-      .attr('data-disqus-url', getDisqusUrl("main"));
+                  .attr('href', '#' + settings.threadId)
+                  .attr(settings.nodeIdentifier, "main")
+                  .attr('data-disqus-url', getDisqusUrl("main"));
     }
 
     loadDisqus($a);
@@ -221,7 +226,7 @@ var disqus_identifier, disqus_url, disqus_shortname;
     var identifier = $source.attr(settings.nodeIdentifier);
     var url = $source.attr('data-disqus-url');
 
-    $("#disqus_thread").empty();
+    $getThread().empty();
 
     if (window.DISQUS) {
       resetDisqus(identifier, url);
@@ -232,9 +237,9 @@ var disqus_identifier, disqus_url, disqus_shortname;
 
     // Add 'active' class.
     $('a.disqussion-link, a.main-disqussion-link')
-  .removeClass('active')
-  .filter($source)
-  .addClass('active');
+      .removeClass('active')
+      .filter($source)
+      .addClass('active');
 
     // Highlight
     if ($source.is('.disqussion-highlight')) {
@@ -260,7 +265,7 @@ var disqus_identifier, disqus_url, disqus_shortname;
 
   var relocateDisqussion = function ($note, main) {
     var windowWidth = $(window).width();
-    $('#disqus_thread').removeClass("disqus-left disqus-right disqus-positioned");
+    $getThread().removeClass("disqus-left disqus-right disqus-positioned");
 
     // Move the discussion to the right position.
     var css = {
@@ -272,7 +277,7 @@ var disqus_identifier, disqus_url, disqus_shortname;
     };
 
     if (main === true) {
-      $('#disqus_thread').detach().appendTo($("#main-disqussion"));
+      $getThread().detach().appendTo($("#main-disqussion"));
     }
     else {
       var anchorName = $note.find("a").attr(settings.nodeIdentifier);
@@ -288,10 +293,10 @@ var disqus_identifier, disqus_url, disqus_shortname;
 
       if (settings.position == 'right' && rightMargin < settings.minMargin
         || settings.position == 'left' && leftMargin < settings.minMargin) {
-        $('#disqus_thread').detach().appendTo($p);
+        $getThread().detach().appendTo($p);
       }
       else {
-        $('#disqus_thread').detach().addClass("disqus-positioned").prependTo("#disqussions_wrapper");
+        $getThread().detach().addClass("disqus-positioned").prependTo("#disqussions_wrapper");
         css.position = "absolute";
       }
 
@@ -305,28 +310,32 @@ var disqus_identifier, disqus_url, disqus_shortname;
         css.top = noteOffset.top;
 
         if ($note.find("a").attr('data-disqus-position') == 'right') {
-          $('#disqus_thread').addClass("disqus-right");
+          $getThread().addClass("disqus-right");
           css.left = windowWidth - rightMargin;
           css.width = Math.min(windowWidth - rightMargin, settings.maxWidth);
         }
         else {
-          $('#disqus_thread').addClass("disqus-left");
+          $getThread().addClass("disqus-left");
           css.left = noteOffset.left - Math.min(parseInt(noteOffset.left, 10), settings.maxWidth);
           css.width = Math.min(parseInt(noteOffset.left, 10), settings.maxWidth);
         }
       }
     }
 
-    $('#disqus_thread').stop().fadeIn('fast').css(css);
+    $getThread().stop().fadeIn('fast').css(css);
 
   };
 
+  var $getThread = function () {
+    return ($("#" + settings.threadId));
+  };
+
   var hideDisqussion = function () {
-    if ($("#disqus_thread").closest("#main-disqussion").length) {
+    if ($getThread().closest("#main-disqussion").length) {
       return;
     }
 
-    $('#disqus_thread').stop().fadeOut('fast');
+    $getThread().stop().fadeOut('fast');
     $('a.disqussion-link').removeClass('active');
 
     // settings.highlighted
@@ -340,9 +349,9 @@ var disqus_identifier, disqus_url, disqus_shortname;
     $('body').addClass('disqussion-highlight');
     $('#disqussions_overlay').fadeIn('fast');
     $('[' + settings.nodeIdentifier + ']')
-  .removeClass('disqussion-highlighted')
-  .filter('[' + settings.nodeIdentifier + '="' + identifier + '"]:not(".disqussion-link")')
-  .addClass('disqussion-highlighted');
+      .removeClass('disqussion-highlighted')
+      .filter('[' + settings.nodeIdentifier + '="' + identifier + '"]:not(".disqussion-link")')
+      .addClass('disqussion-highlighted');
   };
 
 })(jQuery);
